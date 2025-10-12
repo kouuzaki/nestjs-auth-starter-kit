@@ -4,7 +4,7 @@ import * as schema from './schema';
 import { AppEnv } from '@/config/env.validation';
 
 const pool = new Pool({
-  database: 'postgres',
+  database: AppEnv.DATABASE_NAME,
   user: AppEnv.DATABASE_USER,
   password: AppEnv.DATABASE_PASSWORD,
   host: AppEnv.DATABASE_HOST,

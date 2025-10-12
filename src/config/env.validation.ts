@@ -2,23 +2,18 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.development.local' });
 
-import { plainToInstance } from 'class-transformer';
-import { validateSync } from 'class-validator';
-import { EnvDto } from './env.dto';
+import { EnvSchema } from './env.dto';
 
-export function validate(config: Record<string, unknown>): EnvDto {
-  const validatedConfig = plainToInstance(EnvDto, config, {
-    enableImplicitConversion: true,
-  });
-  const errors = validateSync(validatedConfig, {
-    skipMissingProperties: false,
-  });
-
-  if (errors.length > 0) {
-    throw new Error(errors.toString());
+export function validate(config: Record<string, unknown>) {
+  try {
+    return EnvSchema.parse(config);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Environment validation failed: ${error.message}`);
+    }
+    throw new Error('Environment validation failed');
   }
-  return validatedConfig;
 }
 
-// Validate process.env at module load and export a typed EnvDto instance.
-export const AppEnv: EnvDto = validate(process.env);
+// Validate process.env at module load and export a typed instance.
+export const AppEnv = validate(process.env);

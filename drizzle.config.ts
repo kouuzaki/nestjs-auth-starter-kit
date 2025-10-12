@@ -1,7 +1,8 @@
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.development.local' });
+
 import { defineConfig } from 'drizzle-kit';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 export default defineConfig({
   out: './drizzle',
   schema: './src/common/db/*schema/**/*.ts',
@@ -12,5 +13,6 @@ export default defineConfig({
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME!,
+    ssl: false,
   },
 });

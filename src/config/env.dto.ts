@@ -1,32 +1,24 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class EnvDto {
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  APP_PORT = 3000;
+// Zod schema for the same environment variables
+export const EnvSchema = z.object({
+  APP_PORT: z.coerce.number().int().min(1).default(3000),
+  DATABASE_HOST: z.string().min(2).max(100),
+  DATABASE_PORT: z.coerce.number().int().min(1).default(5432),
+  DATABASE_USER: z.string().min(2).max(100),
+  DATABASE_PASSWORD: z.string().min(2).max(100).optional(),
+  DATABASE_NAME: z.string().min(2).max(100),
+  BETTER_AUTH_SECRET: z.string().min(2).max(100),
+  BETTER_AUTH_URL: z.string().url(),
 
-  @IsString()
-  DATABASE_HOST: string;
+  // Email Configuration
+  MAIL_HOST: z.string().min(2).max(100),
+  MAIL_PORT: z.coerce.number().int().min(1).default(587),
+  MAIL_USER: z.string().email(),
+  MAIL_PASSWORD: z.string().min(2).max(100),
+  MAIL_FROM: z.string().email(),
+  MAIL_FROM_NAME: z.string().min(2).max(100).default('NestJS Auth'),
+});
 
-  @Type(() => Number)
-  @IsInt()
-  DATABASE_PORT = 5432;
-
-  @IsString()
-  DATABASE_USER: string;
-
-  @IsOptional()
-  @IsString()
-  DATABASE_PASSWORD?: string;
-
-  @IsString()
-  DATABASE_NAME: string;
-
-  @IsString()
-  BETTER_AUTH_SECRET: string;
-
-  @IsUrl({ require_tld: false }) // Allow localhost and non-TLD URLs
-  BETTER_AUTH_URL: string;
-}
+export const AppDtoEnv = createZodDto(EnvSchema);

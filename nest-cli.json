@@ -10,6 +10,12 @@
         "swcrcPath": "infrastructure/.swcrc"
       }
     },
-    "typeCheck": true
+    "typeCheck": true,
+    "assets": [
+      {
+        "include": "templates/**/*.html",
+        "outDir": "dist"
+      }
+    ]
   }
 }
