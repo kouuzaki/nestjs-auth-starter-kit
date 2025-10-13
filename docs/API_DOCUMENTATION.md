@@ -310,14 +310,48 @@ Authorization: Bearer {session_token}
 
 ## Error Responses
 
+All error responses follow a consistent format using nestjs-zod:
+
+### Validation Error (400):
+
+```json
+{
+  "statusCode": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "path": "email",
+      "message": "Invalid email format",
+      "code": "invalid_string"
+    },
+    {
+      "path": "password",
+      "message": "Password must be at least 8 characters",
+      "code": "too_small"
+    }
+  ],
+  "timestamp": "2025-01-01T00:00:00.000Z",
+  "path": "/api/auth/sign-up/email"
+}
+```
+
 ### Common Error Codes:
 
 **400 Bad Request:**
 
 ```json
 {
-  "error": "Validation Error",
-  "message": "Invalid email format"
+  "statusCode": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "path": "email",
+      "message": "Invalid email format",
+      "code": "invalid_string"
+    }
+  ],
+  "timestamp": "2025-01-01T00:00:00.000Z",
+  "path": "/api/auth/sign-in/email"
 }
 ```
 

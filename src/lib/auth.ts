@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import db from '@db/index';
 import { AppEnv } from '@/config/env.validation';
-import { emailOTP } from 'better-auth/plugins';
+import { emailOTP, lastLoginMethod, openAPI } from 'better-auth/plugins';
 import { MailService } from '@/common/services/mail.service';
 
 // Create mail service instance
@@ -26,6 +26,8 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    lastLoginMethod(),
+    openAPI(),
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
         await mailService.sendVerificationOTP(email, otp, type);
