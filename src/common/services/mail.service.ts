@@ -79,6 +79,94 @@ export class MailService {
     }
   }
 
+  async sendTwoFactorOTP(email: string, otp: string) {
+    const subject = 'Your Two-Factor Authentication Code';
+
+    // Use template with variables
+    const html = this.templateService.render('otp-email', {
+      TITLE: subject,
+      ICON: '🔐',
+      HEADER_TITLE: 'Two-Factor Authentication',
+      MESSAGE: 'Your two-factor authentication code is:',
+      OTP_CODE: otp,
+      EXPIRY_TIME: '5 minutes',
+      CURRENT_YEAR: new Date().getFullYear(),
+      APP_NAME: config.mail.fromName,
+    });
+
+    try {
+      await this.transporter.sendMail({
+        from: `"${config.mail.fromName}" <${config.mail.from}>`,
+        to: email,
+        subject,
+        html,
+      });
+      console.log(`✅ 2FA OTP email sent to ${email}`);
+    } catch (error) {
+      console.error('❌ Failed to send 2FA OTP email:', error);
+      throw new Error('Failed to send two-factor authentication email');
+    }
+  }
+
+  async sendPasswordResetEmail(
+    email: string,
+    resetUrl: string,
+    userName?: string,
+  ) {
+    const subject = 'Reset Your Password';
+
+    // Use password reset template with variables
+    const html = this.templateService.render('password-reset-email', {
+      TITLE: subject,
+      ICON: '🔑',
+      HEADER_TITLE: 'Password Reset',
+      MESSAGE: userName
+        ? `Hi ${userName}, you requested to reset your password. Click the button below to reset your password:`
+        : 'You requested to reset your password. Click the button below to reset your password:',
+      EXPIRY_TIME: '1 hour',
+      CURRENT_YEAR: new Date().getFullYear(),
+      APP_NAME: config.mail.fromName,
+      RESET_URL: resetUrl,
+    });
+
+    try {
+      await this.transporter.sendMail({
+        from: `"${config.mail.fromName}" <${config.mail.from}>`,
+        to: email,
+        subject,
+        html,
+      });
+      console.log(`✅ Password reset email sent to ${email}`);
+    } catch (error) {
+      console.error('❌ Failed to send password reset email:', error);
+      throw new Error('Failed to send password reset email');
+    }
+  }
+
+  async sendPasswordChangeSuccessEmail(email: string, userName?: string) {
+    const subject = 'Your Password Has Been Changed Successfully';
+
+    // Use template with variables
+    const html = this.templateService.render('password-change-success', {
+      GREETING: userName ? `Hi ${userName},` : 'Hello,',
+      CURRENT_YEAR: new Date().getFullYear(),
+      APP_NAME: config.mail.fromName,
+    });
+
+    try {
+      await this.transporter.sendMail({
+        from: `"${config.mail.fromName}" <${config.mail.from}>`,
+        to: email,
+        subject,
+        html,
+      });
+      console.log(`✅ Password change success email sent to ${email}`);
+    } catch (error) {
+      console.error('❌ Failed to send password change success email:', error);
+      throw new Error('Failed to send password change notification');
+    }
+  }
+
   private getSubject(type: string): string {
     switch (type) {
       case 'sign-in':

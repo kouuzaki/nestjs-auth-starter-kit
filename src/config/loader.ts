@@ -55,6 +55,13 @@ export class ConfigLoader {
   }
 
   /**
+   * Get application name
+   */
+  public get appName(): string {
+    return this.config.APP_APPLICATION_NAME;
+  }
+
+  /**
    * Get database configuration
    */
   public get database() {
