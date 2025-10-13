@@ -45,7 +45,7 @@ async function bootstrap() {
   app.use(
     `/${appConfig.appGlobalPrefix}/reference`,
     apiReference({
-      pageTitle: 'API Reference',
+      pageTitle: `${appConfig.getConfig().APP_APPLICATION_NAME} - API Reference`,
       theme: 'default',
       sources: [
         { url: '/openapi.json', title: 'Main API' },
