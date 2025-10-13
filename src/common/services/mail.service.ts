@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { AppEnv } from '@/config/env.validation';
+import { config } from '@/config/loader';
 import { TemplateService } from './template.service';
 
 @Injectable()
@@ -12,12 +12,12 @@ export class MailService {
   constructor() {
     this.templateService = new TemplateService();
     this.transporter = nodemailer.createTransport({
-      host: AppEnv.MAIL_HOST,
-      port: AppEnv.MAIL_PORT,
-      secure: AppEnv.MAIL_PORT === 465, // true for 465, false for other ports
+      host: config.mail.host,
+      port: config.mail.port,
+      secure: config.mail.port === 465, // true for 465, false for other ports
       auth: {
-        user: AppEnv.MAIL_USER,
-        pass: AppEnv.MAIL_PASSWORD,
+        user: config.mail.user,
+        pass: config.mail.password,
       },
     });
   }
@@ -34,12 +34,12 @@ export class MailService {
       OTP_CODE: otp,
       EXPIRY_TIME: '10 minutes',
       CURRENT_YEAR: new Date().getFullYear(),
-      APP_NAME: AppEnv.MAIL_FROM_NAME,
+      APP_NAME: config.mail.fromName,
     });
 
     try {
       await this.transporter.sendMail({
-        from: `"${AppEnv.MAIL_FROM_NAME}" <${AppEnv.MAIL_FROM}>`,
+        from: `"${config.mail.fromName}" <${config.mail.from}>`,
         to: email,
         subject,
         html,
@@ -62,12 +62,12 @@ export class MailService {
       VERIFICATION_URL: verificationUrl,
       EXPIRY_TIME: '24 hours',
       CURRENT_YEAR: new Date().getFullYear(),
-      APP_NAME: AppEnv.MAIL_FROM_NAME,
+      APP_NAME: config.mail.fromName,
     });
 
     try {
       await this.transporter.sendMail({
-        from: `"${AppEnv.MAIL_FROM_NAME}" <${AppEnv.MAIL_FROM}>`,
+        from: `"${config.mail.fromName}" <${config.mail.from}>`,
         to: email,
         subject: 'Verify Your Email Address',
         html,

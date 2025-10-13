@@ -1,18 +1,23 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.development.local' });
-
 import { defineConfig } from 'drizzle-kit';
+import { config } from './src/config/loader';
 
 export default defineConfig({
-  out: './drizzle',
+  out: './migrations',
   schema: './src/common/db/*schema/**/*.ts',
   dialect: 'postgresql',
   dbCredentials: {
-    host: process.env.DATABASE_HOST!,
-    port: Number(process.env.DATABASE_PORT),
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_NAME!,
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.database,
     ssl: false,
   },
+  migrations: {
+    table: 'migrations',
+    schema: 'public',
+  },
+  strict: true,
+  verbose: true,
+  breakpoints: true, // add breakpoint to SQL statements
 });

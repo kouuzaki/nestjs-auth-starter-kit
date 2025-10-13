@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { accountStatusEnum } from './enum/enums';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -38,6 +39,7 @@ export const account = pgTable('account', {
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),
+  status: accountStatusEnum('status').default('active').notNull(),
   accessTokenExpiresAt: timestamp('access_token_expires_at'),
   refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
   scope: text('scope'),

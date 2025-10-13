@@ -1,6 +1,6 @@
 {
-  "id": "2b7079c7-36fe-4a5f-8573-f7189435f6f7",
-  "prevId": "6dc85638-e9af-4f8e-a723-7d1d2440456c",
+  "id": "d0fc6299-f4bc-4e26-b1ce-1ed35ac12023",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -49,6 +49,14 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "account_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
         },
         "access_token_expires_at": {
           "name": "access_token_expires_at",
@@ -312,7 +320,17 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.account_status": {
+      "name": "account_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "suspended"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

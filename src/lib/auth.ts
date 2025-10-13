@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import db from '@db/index';
-import { AppEnv } from '@/config/env.validation';
+import { config } from '@/config/loader';
 import { emailOTP, lastLoginMethod, openAPI } from 'better-auth/plugins';
 import { MailService } from '@/common/services/mail.service';
 
@@ -16,9 +16,27 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
   },
-  baseURL: AppEnv.BETTER_AUTH_URL,
+  account: {
+    updateAccountOnSignIn: true,
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+      allowUnlinkingAll: true,
+    },
+    encryptOAuthTokens: true,
+    status: {
+      enum: ['active', 'inactive', 'suspended'],
+    },
+    storeSessionInDatabase: true,
+    preserveSessionInDatabase: false,
+    cookieCache: {
+      enabled: true,
+      maxAge: 300,
+    },
+  },
+  baseURL: config.betterAuth.url,
   basePath: '/api/auth',
-  secret: AppEnv.BETTER_AUTH_SECRET,
+  secret: config.betterAuth.secret,
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {

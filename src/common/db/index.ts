@@ -1,14 +1,14 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
-import { AppEnv } from '@/config/env.validation';
+import { config as appConfig } from '@/config/loader';
 
 const pool = new Pool({
-  database: AppEnv.DATABASE_NAME,
-  user: AppEnv.DATABASE_USER,
-  password: AppEnv.DATABASE_PASSWORD,
-  host: AppEnv.DATABASE_HOST,
-  port: AppEnv.DATABASE_PORT,
+  database: appConfig.database.database,
+  user: appConfig.database.user,
+  password: appConfig.database.password,
+  host: appConfig.database.host,
+  port: appConfig.database.port,
 });
 
 // Create a Drizzle client using the pg Pool

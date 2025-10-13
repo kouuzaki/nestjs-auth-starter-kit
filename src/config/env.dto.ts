@@ -11,6 +11,7 @@ export const EnvSchema = z.object({
   DATABASE_NAME: z.string().min(2).max(100),
   BETTER_AUTH_SECRET: z.string().min(2).max(100),
   BETTER_AUTH_URL: z.string().url(),
+  APP_GLOBAL_PREFIX: z.string().min(1).max(100).default('api'),
 
   // Email Configuration
   MAIL_HOST: z.string().min(2).max(100),
