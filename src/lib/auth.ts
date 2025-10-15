@@ -18,6 +18,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
   }),
+  trustedOrigins: config.getFrontendUrls(),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -73,7 +74,7 @@ export const auth = betterAuth({
     }),
     twoFactor({
       issuer: config.appName,
-      skipVerificationOnEnable: false,
+      skipVerificationOnEnable: true,
       otpOptions: {
         digits: 6,
         period: 30,

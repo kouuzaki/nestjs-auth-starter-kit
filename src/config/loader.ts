@@ -104,6 +104,13 @@ export class ConfigLoader {
   public getReferenceUrl(): string {
     return `http://localhost:${this.appPort}/${this.appGlobalPrefix}/reference`;
   }
+
+  /**
+   * Get frontend URLs
+   */
+  public getFrontendUrls(): string[] {
+    return this.config.APP_FRONTEND_URL;
+  }
 }
 
 // Export singleton instance
