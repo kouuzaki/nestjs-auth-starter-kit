@@ -9,6 +9,7 @@ import {
   twoFactor,
 } from 'better-auth/plugins';
 import { MailService } from '@/common/services/mail.service';
+import { authResponseHook } from '@/lib/auth-hooks';
 
 // Create mail service instance
 const mailService = new MailService();
@@ -30,6 +31,9 @@ export const auth = betterAuth({
     onPasswordReset: async ({ user }) => {
       await mailService.sendPasswordChangeSuccessEmail(user.email, user.name);
     },
+  },
+  hooks: {
+    after: authResponseHook,
   },
   account: {
     updateAccountOnSignIn: true,

@@ -48,7 +48,7 @@ export const EnvSchema = z.object({
 
   MAIL_HOST: z.string().min(2).max(100),
   MAIL_PORT: z.coerce.number().int().min(1).default(587),
-  MAIL_USER: z.string().email(),
+  MAIL_USER: z.string(),
   MAIL_PASSWORD: z.string().min(2).max(100),
   MAIL_FROM: z.string().email(),
   MAIL_FROM_NAME: z.string().min(2).max(100).default('NestJS Auth'),
