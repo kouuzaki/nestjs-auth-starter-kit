@@ -33,6 +33,7 @@ export const auth = betterAuth({
     },
   },
   hooks: {
+    before: authResponseHook,
     after: authResponseHook,
   },
   account: {

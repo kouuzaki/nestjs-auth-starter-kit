@@ -1,9 +1,9 @@
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { AuthResponseFormatter } from '@/common/utils/auth-response';
-import { HttpStatus } from '@nestjs/common';
 
 /**
  * After hook untuk format response (success & error) dengan custom API response
+ * Menggunakan APIError dari better-auth untuk set HTTP status code dengan benar
  */
 export const authResponseHook = createAuthMiddleware(async (ctx) => {
   // Hanya process POST requests
@@ -11,117 +11,150 @@ export const authResponseHook = createAuthMiddleware(async (ctx) => {
     return;
   }
 
-  // Cek jika ada returned value dari endpoint
-  if (ctx.context.returned) {
-    const returned = ctx.context.returned as Record<string, unknown>;
-
-    // Handle error response dari Better Auth
-    if (returned instanceof Error || returned?.error) {
-      // Extract error details from returned object
-      const retObj = returned as Record<string, unknown> | null;
-      const errorCode = retObj?.code;
-      const errorMessage = retObj?.message;
-
-      const statusCode = getStatusCodeFromAPIError(
-        typeof errorCode === 'string' ? errorCode : 'BAD_REQUEST',
-      );
-
-      const formattedErrorResponse = AuthResponseFormatter.error(
-        String(errorMessage) || 'An error occurred',
-        statusCode,
-        errorCode && typeof errorCode === 'string'
-          ? [
-              {
-                code: errorCode,
-                message: String(errorMessage) || 'An error occurred',
-              },
-            ]
-          : undefined,
-        ctx.path,
-      );
-
-      return ctx.json(formattedErrorResponse);
-    }
-
-    // Handle success response
-    let message = 'Success';
-    let statusCode = HttpStatus.OK;
-
-    // Determine message dan status code berdasarkan path
-    if (ctx.path.includes('/sign-up')) {
-      message = 'User registered successfully';
-      statusCode = HttpStatus.CREATED;
-    } else if (ctx.path.includes('/sign-in')) {
-      message = 'User signed in successfully';
-    } else if (ctx.path.includes('/change-password')) {
-      message = 'Password changed successfully';
-    } else if (ctx.path.includes('/verify-email')) {
-      message = 'Email verified successfully';
-    } else if (ctx.path.includes('/forget-password')) {
-      message = 'Password reset email sent successfully';
-    } else if (ctx.path.includes('/reset-password')) {
-      message = 'Password reset successfully';
-    } else if (ctx.path.includes('/sign-out')) {
-      message = 'User signed out successfully';
-    }
-
-    const formattedResponse = AuthResponseFormatter.success(
-      returned,
-      message,
-      statusCode,
-      ctx.path,
-    );
-
-    return ctx.json(formattedResponse);
-  }
-});
-
-/**
- * Before hook untuk handle error dengan custom API response
- */
-export const authErrorHandlerHook = createAuthMiddleware(async (ctx) => {
   try {
-    // Middleware akan dijalankan sebelum endpoint
-    // Error handling akan ditangani di after hook
-  } catch (error) {
-    if (error instanceof APIError) {
-      const message = error.message || 'Authentication error';
-      const statusCode = getStatusCodeFromAPIError(String(error.status));
+    // Cek jika ada returned value dari endpoint
+    if (ctx.context.returned) {
+      const returned = ctx.context.returned as Record<string, unknown>;
 
-      const formattedResponse = AuthResponseFormatter.error(
+      // Handle error response dari Better Auth
+      if (returned instanceof Error || returned?.error) {
+        // Extract error details from returned object
+        const retObj = returned as Record<string, unknown> | null;
+        const errorCode = retObj?.code;
+        const errorMessage = retObj?.message;
+
+        const statusCode = getErrorStatusCode(
+          typeof errorCode === 'string' ? errorCode : 'BAD_REQUEST',
+        );
+
+        // Throw APIError dengan status code yang benar
+        throw new APIError(getErrorAPIStatus(statusCode), {
+          message: String(errorMessage) || 'An error occurred',
+          code: typeof errorCode === 'string' ? errorCode : undefined,
+        });
+      }
+
+      // Handle success response
+      let message = 'Success';
+      let statusCode = 200;
+
+      // Determine message dan status code berdasarkan path
+      if (ctx.path.includes('/sign-up')) {
+        message = 'User registered successfully';
+        statusCode = 201;
+      } else if (ctx.path.includes('/sign-in')) {
+        message = 'User signed in successfully';
+        statusCode = 200;
+      } else if (ctx.path.includes('/change-password')) {
+        message = 'Password changed successfully';
+        statusCode = 200;
+      } else if (ctx.path.includes('/verify-email')) {
+        message = 'Email verified successfully';
+        statusCode = 200;
+      } else if (ctx.path.includes('/forget-password')) {
+        message = 'Password reset email sent successfully';
+        statusCode = 200;
+      } else if (ctx.path.includes('/reset-password')) {
+        message = 'Password reset successfully';
+        statusCode = 200;
+      } else if (ctx.path.includes('/sign-out')) {
+        message = 'User signed out successfully';
+        statusCode = 200;
+      }
+
+      const formattedResponse = AuthResponseFormatter.success(
+        returned,
         message,
         statusCode,
-        undefined,
         ctx.path,
       );
 
-      return ctx.json(formattedResponse);
+      // Return success response
+      return ctx.json(formattedResponse, {
+        status: statusCode,
+      });
     }
-
-    // Fallback untuk error lainnya
-    const formattedResponse = AuthResponseFormatter.internalServerError(
-      'An unexpected error occurred',
-      ctx.path,
-    );
-
-    return ctx.json(formattedResponse);
+  } catch (error) {
+    // Jika error dari Better Auth, re-throw dengan format response
+    if (error instanceof APIError) {
+      throw error;
+    }
+    throw error;
   }
 });
 
 /**
- * Helper function untuk convert APIError status ke HTTP status code
+ * Convert error code ke HTTP status code
  */
-function getStatusCodeFromAPIError(status: string): number {
+function getErrorStatusCode(errorCode: string): number {
   const statusMap: Record<string, number> = {
-    BAD_REQUEST: HttpStatus.BAD_REQUEST,
-    UNAUTHORIZED: HttpStatus.UNAUTHORIZED,
-    FORBIDDEN: HttpStatus.FORBIDDEN,
-    NOT_FOUND: HttpStatus.NOT_FOUND,
-    CONFLICT: HttpStatus.CONFLICT,
-    INTERNAL_SERVER_ERROR: HttpStatus.INTERNAL_SERVER_ERROR,
-    UNPROCESSABLE_ENTITY: HttpStatus.UNPROCESSABLE_ENTITY,
-    TOO_MANY_REQUESTS: HttpStatus.TOO_MANY_REQUESTS,
+    // Better Auth error codes - Unauthorized (401)
+    INVALID_EMAIL_OR_PASSWORD: 401,
+    INVALID_CREDENTIALS: 401,
+    INVALID_PASSWORD: 401,
+    UNAUTHORIZED: 401,
+
+    // Not Found (404)
+    USER_NOT_FOUND: 404,
+
+    // Conflict (409)
+    EMAIL_ALREADY_EXISTS: 409,
+    CONFLICT: 409,
+
+    // Forbidden (403)
+    EMAIL_NOT_VERIFIED: 403,
+    USER_SUSPENDED: 403,
+    FORBIDDEN: 403,
+
+    // Bad Request (400)
+    BAD_REQUEST: 400,
+    INVALID_EMAIL: 400,
+    PASSWORD_TOO_WEAK: 400,
+    INVALID_INPUT: 400,
+    VALIDATION_FAILED: 400,
+
+    // Too Many Requests (429)
+    RATE_LIMIT_EXCEEDED: 429,
+    TOO_MANY_REQUESTS: 429,
+
+    // Server Error (500)
+    INTERNAL_SERVER_ERROR: 500,
   };
 
-  return statusMap[status] || HttpStatus.BAD_REQUEST;
+  return statusMap[errorCode] || 400;
+}
+
+/**
+ * Convert HTTP status code ke APIError status string
+ */
+function getErrorAPIStatus(
+  statusCode: number,
+):
+  | 'BAD_REQUEST'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'TOO_MANY_REQUESTS'
+  | 'INTERNAL_SERVER_ERROR' {
+  const statusMap: Record<
+    number,
+    | 'BAD_REQUEST'
+    | 'UNAUTHORIZED'
+    | 'FORBIDDEN'
+    | 'NOT_FOUND'
+    | 'CONFLICT'
+    | 'TOO_MANY_REQUESTS'
+    | 'INTERNAL_SERVER_ERROR'
+  > = {
+    400: 'BAD_REQUEST',
+    401: 'UNAUTHORIZED',
+    403: 'FORBIDDEN',
+    404: 'NOT_FOUND',
+    409: 'CONFLICT',
+    429: 'TOO_MANY_REQUESTS',
+    500: 'INTERNAL_SERVER_ERROR',
+  };
+
+  return statusMap[statusCode] || 'BAD_REQUEST';
 }
