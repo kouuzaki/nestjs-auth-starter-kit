@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { EnvSchema } from './env.dto';
 
 // Load environment variables
-dotenv.config({ path: '.env.development.local' });
+dotenv.config();
 
 /**
  * Configuration loader that validates and provides typed environment variables
