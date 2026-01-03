@@ -1,4 +1,3 @@
-// main.ts
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
@@ -17,7 +16,8 @@ async function bootstrap() {
     })
   });
 
-  // --- Buat OpenAPI utama dari NestJS ---
+  const logger = new ConsoleLogger('Bootstrap', { timestamp: true });
+
   const config = new DocumentBuilder()
     .setTitle('Main API')
     .setDescription('NestJS + Better Auth + Scalar')
@@ -25,17 +25,18 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
+
   const swaggerDoc = SwaggerModule.createDocument(app, config);
 
-  // --- Simpan schema ke provider global agar bisa diambil controller ---
+  // Set global prefix
   app.setGlobalPrefix(appConfig.appGlobalPrefix);
 
-  // Serve file OpenAPI utama di endpoint JSON
+  // Setup Swagger JSON endpoint
   app.getHttpAdapter().get('/openapi.json', (req: Request, res: Response) => {
     res.json(swaggerDoc);
   });
 
-  // --- Setup Scalar UI dengan multi-source ---
+  // Setup API Reference endpoint
   app.use(
     `/${appConfig.appGlobalPrefix}/reference`,
     apiReference({
@@ -48,12 +49,10 @@ async function bootstrap() {
     }),
   );
 
-  // --------------------------------------------------------
-  // Global pipes (Zod validation, dll.)
-  // --------------------------------------------------------
+  // Setup Swagger module
   app.useGlobalPipes(new ZodValidationPipe());
-
   await app.listen(appConfig.appPort);
-  console.log(`🚀  ${appConfig.getReferenceUrl()}`);
+  logger.log(`🚀 Application is running on: http://localhost:${appConfig.appPort}/${appConfig.appGlobalPrefix}`);
+  logger.log(`📚 API Reference available at: http://localhost:${appConfig.appPort}/${appConfig.appGlobalPrefix}/reference`);
 }
 void bootstrap();
