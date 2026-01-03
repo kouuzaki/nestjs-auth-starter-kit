@@ -8,7 +8,6 @@ import {
 } from 'better-auth/plugins';
 import { config } from '@/config/loader';
 import { MailService } from '@/common/services/mail.service';
-import { authResponseHook } from '@/modules/auth/hooks/auth-hooks';
 import { DatabaseService } from '@/common/db';
 
 /**
@@ -36,10 +35,6 @@ export function createBetterAuth(
       onPasswordReset: async ({ user }) => {
         await mailService.sendPasswordChangeSuccessEmail(user.email, user.name);
       },
-    },
-    hooks: {
-      before: authResponseHook,
-      after: authResponseHook,
     },
     account: {
       updateAccountOnSignIn: true,
