@@ -34,12 +34,5 @@ import { UserModule } from './modules/user/user.module';
     },
   ],
 })
-export class AppModule {
-  private readonly logger = new Logger(AppModule.name);
 
-  constructor() {
-    this.logger.log('═══════════════════════════════════════');
-    this.logger.log('🚀 Application starting...');
-    this.logger.log('═══════════════════════════════════════');
-  }
-}
+export class AppModule {}

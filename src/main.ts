@@ -43,6 +43,7 @@ async function bootstrap() {
       theme: 'default',
       sources: [
         { url: '/openapi.json', title: 'Main API' },
+        { url: `/${appConfig.appGlobalPrefix}/auth/open-api/generate-schema`, title: 'Auth API' },
       ],
     }),
   );
