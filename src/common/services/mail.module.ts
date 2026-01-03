@@ -1,10 +1,25 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, Logger } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { TemplateService } from './template.service';
 
 @Global()
 @Module({
-  providers: [MailService, TemplateService],
+  providers: [
+    {
+      provide: MailService,
+      useClass: MailService,
+    },
+    {
+      provide: TemplateService,
+      useClass: TemplateService,
+    },
+  ],
   exports: [MailService, TemplateService],
 })
-export class MailModule {}
+export class MailModule {
+  private readonly logger = new Logger(MailModule.name);
+
+  constructor() {
+    this.logger.log('📧 MailModule initialized (Global)');
+  }
+}

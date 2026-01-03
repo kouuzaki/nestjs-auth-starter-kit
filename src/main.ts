@@ -4,13 +4,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppModule } from './app.module';
-import { auth } from '@/lib/auth';
 import { Request, Response } from 'express';
 import { config as appConfig } from '@/config/loader';
+import { ConsoleLogger } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    bodyParser: false, // diperlukan oleh Better Auth
+    bodyParser: false, // needed for better-auth
+    logger: new ConsoleLogger({
+      timestamp: true,
+      colors: true,
+    })
   });
 
   // --- Buat OpenAPI utama dari NestJS ---
@@ -31,16 +35,6 @@ async function bootstrap() {
     res.json(swaggerDoc);
   });
 
-  // --------------------------------------------------------
-  // 2️⃣  Serve Better Auth OpenAPI schema sebagai endpoint JSON
-  // --------------------------------------------------------
-  app
-    .getHttpAdapter()
-    .get('/auth/openapi.json', async (req: Request, res: Response) => {
-      const authSchema = await auth.api.generateOpenAPISchema();
-      res.json(authSchema);
-    });
-
   // --- Setup Scalar UI dengan multi-source ---
   app.use(
     `/${appConfig.appGlobalPrefix}/reference`,
@@ -49,16 +43,12 @@ async function bootstrap() {
       theme: 'default',
       sources: [
         { url: '/openapi.json', title: 'Main API' },
-        {
-          url: '/auth/openapi.json',
-          title: 'Auth API',
-        },
       ],
     }),
   );
 
   // --------------------------------------------------------
-  // 4️⃣  Global pipes (Zod validation, dll.)
+  // Global pipes (Zod validation, dll.)
   // --------------------------------------------------------
   app.useGlobalPipes(new ZodValidationPipe());
 
